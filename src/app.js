@@ -15,16 +15,26 @@ server.use(express.json());
 const mongoClient = new MongoClient("mongodb://127.0.0.1:27017");
 let db;
 
-//connect é uma função do mongo que retorna uma promisse, podendo assim usar then e catch
+//connect é uma função do mongo que retorna uma promisse que conecta o servidor ao banco de dados, podendo assim usar then e catch
 mongoClient
   .connect()
   .then(() => {
     db = mongoClient.db("DATABASE_URL");
-    console.log("conectado o servidor ao banco de dados mongodb");
+    console.log("servidor conectado ao banco de dados mongodb");
   })
   .catch(() => {
     console.log("caminho não encontrado");
   });
+
+server.get("/participants", (req, res) => {
+  db.collection("participants")
+    .find()
+    .toArray()
+    .then((dados) => {
+      return res.send(dados);
+    })
+    .catch(() => console.log("algum erro"));
+});
 
 //roda server na porta 5000
 server.listen(PORT);
