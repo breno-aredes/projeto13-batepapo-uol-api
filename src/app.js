@@ -37,6 +37,29 @@ server.get("/participants", async (req, res) => {
   }
 });
 
+server.post("/participants", async (req, res) => {
+  const { name } = req.body;
+
+  try {
+    const nameAlreadyListed = await db
+      .collection("participants")
+      .findOne({ name });
+
+    if (nameAlreadyListed) {
+      return res.status(402).send("Nome ja cadastrado");
+    }
+
+    await db
+      .collection("participants")
+      .insertOne({ name, lastStatus: Date.now() });
+
+    res.send("ok");
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Erro no servidor");
+  }
+});
+
 server.get("/messages", async (req, res) => {
   try {
     const particiapants = await db.collection("messages").find().toArray();
