@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
+import dayjs from "dayjs";
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ const mongoClient = new MongoClient(process.env.DATABASE_URL);
 //connect para ter uma promisse, tenta conectar e o banco de dados
 try {
   await mongoClient.connect();
+
   console.log("servidor conectado ao banco de dados mongodb");
 } catch (err) {
   res.status(500).send("Erro no servidor");
@@ -46,12 +48,27 @@ server.post("/participants", async (req, res) => {
       .findOne({ name });
 
     if (nameAlreadyListed) {
-      return res.status(402).send("Nome ja cadastrado");
+      return res.status(409).send("Nome ja cadastrado");
     }
 
     await db
       .collection("participants")
       .insertOne({ name, lastStatus: Date.now() });
+
+    const currentTime =
+      dayjs().get("hour", "HH") +
+      ":" +
+      dayjs().get("minute", "MM") +
+      ":" +
+      dayjs().get("second", "SS");
+
+    await db.collection("messages").insertOne({
+      from: name,
+      to: "Todos",
+      text: "entra na sala...",
+      type: "status",
+      time: currentTime,
+    });
 
     res.send("ok");
   } catch (err) {
@@ -68,6 +85,8 @@ server.get("/messages", async (req, res) => {
     res.status(500).send("Erro no servidor");
   }
 });
+
+server.post("/messages", async (req, res) => {});
 
 //roda server na porta 5000
 server.listen(PORT);
