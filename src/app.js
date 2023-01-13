@@ -70,7 +70,7 @@ server.post("/participants", async (req, res) => {
       time: currentTime,
     });
 
-    res.send("ok");
+    res.status(201).send("ok");
   } catch (err) {
     console.log(err);
     res.status(500).send("Erro no servidor");
