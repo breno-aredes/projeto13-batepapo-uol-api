@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 //cria porta para servidor
-const PORT = process.env.PORT;
+const PORT = 5000;
 
 //cria o servidor
 const server = express();
@@ -16,18 +16,17 @@ server.use(cors());
 server.use(express.json());
 //para usar mongoclient, conectado ao endereço
 const mongoClient = new MongoClient(process.env.DATABASE_URL);
-//conecta db ao banco de dados fornecido pela connection string
-let db = mongoClient.db();
 
-//connect é uma função do mongo que retorna uma promisse que conecta o servidor ao banco de dados, podendo assim usar then e catch
-mongoClient
-  .connect()
-  .then(() => {
-    console.log("servidor conectado ao banco de dados mongodb");
-  })
-  .catch(() => {
-    console.log("caminho não encontrado");
-  });
+//connect para ter uma promisse
+try {
+  await mongoClient.connect();
+  console.log("servidor conectado ao banco de dados mongodb");
+} catch {
+  console.log("caminho não encontrado");
+}
+
+//conecta db ao banco de dados fornecido pela connection string
+const db = mongoClient.db();
 
 server.get("/participants", (req, res) => {
   db.collection("participants")
