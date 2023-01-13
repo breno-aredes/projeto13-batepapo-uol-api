@@ -86,7 +86,46 @@ server.get("/messages", async (req, res) => {
   }
 });
 
-server.post("/messages", async (req, res) => {});
+server.post("/messages", async (req, res) => {
+  const { to, text, type } = req.body;
+  const { user } = req.headers;
+  const validType = ["message", "private_message"];
+  const nameAlreadyListed = await db
+    .collection("participants")
+    .findOne({ name: user });
+  console.log(nameAlreadyListed);
+
+  try {
+    if (
+      to === "" ||
+      text === "" ||
+      !validType.includes(type) ||
+      !nameAlreadyListed
+    ) {
+      return res.status(422).send("Erro encontrado");
+    }
+
+    const currentTime =
+      dayjs().get("hour", "HH") +
+      ":" +
+      dayjs().get("minute", "MM") +
+      ":" +
+      dayjs().get("second", "SS");
+
+    await db.collection("messages").insertOne({
+      from: user,
+      to,
+      text,
+      type,
+      time: currentTime,
+    });
+
+    res.sendStatus(201);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Erro no servidor");
+  }
+});
 
 //roda server na porta 5000
 server.listen(PORT);
