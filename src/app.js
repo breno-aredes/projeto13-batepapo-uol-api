@@ -49,7 +49,7 @@ server.post("/participants", async (req, res) => {
 
     if (nameAlreadyListed) {
       return res.status(409).send("Nome ja cadastrado");
-    }
+    } else if (name === "") return res.status(422).send("nome invalido");
 
     await db
       .collection("participants")
