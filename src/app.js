@@ -3,7 +3,7 @@ import cors from "cors";
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 import dayjs from "dayjs";
-import joi from 'joi'
+import joi from "joi";
 
 dotenv.config();
 
@@ -14,7 +14,7 @@ const PORT = 5000;
 const server = express();
 //libera acesso ao servidor
 server.use(cors());
-//utiliza json
+//para utilizar json
 server.use(express.json());
 //para usar mongoclient, conectado ao endereço
 const mongoClient = new MongoClient(process.env.DATABASE_URL);
@@ -44,14 +44,14 @@ server.post("/participants", async (req, res) => {
   const user = req.body;
 
   const userSchema = joi.object({
-    name: joi.string().required()
-  })
+    name: joi.string().required(),
+  });
 
-  const validation = userSchema.validate(user, { abortEarly: false })
+  const validation = userSchema.validate(user, { abortEarly: false });
 
   if (validation.error) {
-    const errors = validation.error.details.map((detail) => detail.message);
-    return res.status(422).send(errors);
+    const err = validation.error.details.map((detail) => detail.message);
+    return res.status(422).send(err);
   }
 
   try {
@@ -65,7 +65,7 @@ server.post("/participants", async (req, res) => {
 
     await db
       .collection("participants")
-      .insertOne({ name: user.name , lastStatus: Date.now() });
+      .insertOne({ name: user.name, lastStatus: Date.now() });
 
     //nota* seria mais simpels ter usado dayjs(Date.now()).Format("HH.MM.SS")
     const currentTime =
@@ -102,22 +102,31 @@ server.get("/messages", async (req, res) => {
 server.post("/messages", async (req, res) => {
   const { to, text, type } = req.body;
   const { user } = req.headers;
-  const validType = ["message", "private_message"];
+
+  const messageSchema = joi.object({
+    to: joi.string().required(),
+    text: joi.string().required(),
+    type: joi.string().valid("message").valid("private_message").required(),
+    from: joi.string().required(),
+  });
+
+  const validate = messageSchema.validate(
+    { to, text, type, from: user },
+    { abortEarly: false }
+  );
+
+  if (validate.error) {
+    const err = validate.error.details.map((detail) => detail.message);
+    return res.status(422).send(err);
+  }
+
   const nameAlreadyListed = await db
     .collection("participants")
     .findOne({ name: user });
-  console.log(nameAlreadyListed);
+
+  if (!nameAlreadyListed) return res.sendStatus(422);
 
   try {
-    if (
-      to === "" ||
-      text === "" ||
-      !validType.includes(type) ||
-      !nameAlreadyListed
-    ) {
-      return res.status(422).send("Erro encontrado");
-    }
-
     const currentTime =
       dayjs().get("hour", "HH") +
       ":" +
