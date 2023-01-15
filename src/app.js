@@ -164,8 +164,14 @@ server.post("/Status", async (req, res) => {
       .collection("participants")
       .findOne({ name: user });
 
-    if (registeredUser) return res.sendStatus(200);
-    else return res.sendStatus(404);
+    if (!registeredUser) return res.sendStatus(404);
+
+    db.collection("participants").updateOne(
+      { name: user },
+      { $set: { lastStatus: Date.now() } }
+    );
+
+    res.sendStatus(200);
   } catch (err) {
     res.sendStatus(500);
   }
