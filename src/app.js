@@ -61,7 +61,7 @@ server.post("/participants", async (req, res) => {
 
     if (nameAlreadyListed) {
       return res.status(409).send("Nome ja cadastrado");
-    } //else if (name === "") return res.status(422).send("nome invalido");
+    }
 
     await db
       .collection("participants")
@@ -92,9 +92,6 @@ server.get("/messages", async (req, res) => {
     if (limit <= 0 || isNaN(limit) === true) {
       return res.sendStatus(422);
     }
-  }
-  if (!user) {
-    return res.sendStatus(422);
   }
 
   try {
@@ -156,6 +153,23 @@ server.post("/messages", async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(500).send("Erro no servidor");
+  }
+});
+
+// server.post("/Status", async (req, res) => {});
+
+server.post("/Status", async (req, res) => {
+  const user = req.headers.user;
+
+  try {
+    const registeredUser = await db
+      .collection("participants")
+      .findOne({ name: user });
+
+    if (registeredUser) return res.sendStatus(200);
+    else return res.sendStatus(404);
+  } catch (err) {
+    res.sendStatus(500);
   }
 });
 
