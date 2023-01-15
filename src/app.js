@@ -91,13 +91,27 @@ server.post("/participants", async (req, res) => {
 });
 
 server.get("/messages", async (req, res) => {
+  const { limit } = req.query;
+
+  if (limit <= 0 || isNaN(limit)) {
+    return res.sendStatus(422);
+  }
+
   try {
-    const particiapants = await db.collection("messages").find().toArray();
-    return res.send(particiapants);
+    const messages = await db.collection("messages").find().toArray();
+
+    if (limit) {
+      const lastMessages = messages.reverse().slice(0, parseInt(limit));
+      return res.send(lastMessages.reverse());
+    }
+
+    return res.send(messages);
   } catch (err) {
     res.status(500).send("Erro no servidor");
   }
 });
+
+//server.get("/message/:limit?", async (req, res) => {});
 
 server.post("/messages", async (req, res) => {
   const { to, text, type } = req.body;
