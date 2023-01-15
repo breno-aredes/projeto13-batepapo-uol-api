@@ -67,7 +67,7 @@ server.post("/participants", async (req, res) => {
       .collection("participants")
       .insertOne({ name: user.name, lastStatus: Date.now() });
 
-    const currentTime = dayjs(Date.now()).format("HH.mm.ss");
+    const currentTime = dayjs(Date.now()).format("HH:mm:ss");
 
     await db.collection("messages").insertOne({
       to: "Todos",
@@ -139,7 +139,7 @@ server.post("/messages", async (req, res) => {
   if (!nameAlreadyListed) return res.sendStatus(422);
 
   try {
-    const currentTime = dayjs(Date.now()).format("HH.mm.ss");
+    const currentTime = dayjs(Date.now()).format("HH:mm:ss");
 
     await db.collection("messages").insertOne({
       to,
@@ -155,8 +155,6 @@ server.post("/messages", async (req, res) => {
     res.status(500).send("Erro no servidor");
   }
 });
-
-// server.post("/Status", async (req, res) => {});
 
 server.post("/Status", async (req, res) => {
   const user = req.headers.user;
