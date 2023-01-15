@@ -67,13 +67,7 @@ server.post("/participants", async (req, res) => {
       .collection("participants")
       .insertOne({ name: user.name, lastStatus: Date.now() });
 
-    //nota* seria mais simpels ter usado dayjs(Date.now()).Format("HH.MM.SS")
-    const currentTime =
-      dayjs().get("hour", "HH") +
-      ":" +
-      dayjs().get("minute", "mm") +
-      ":" +
-      dayjs().get("second", "ss");
+    const currentTime = dayjs(Date.now()).format("HH.mm.ss");
 
     await db.collection("messages").insertOne({
       to: "Todos",
@@ -92,15 +86,22 @@ server.post("/participants", async (req, res) => {
 
 server.get("/messages", async (req, res) => {
   const { limit } = req.query;
+  const user = req.headers.user;
 
   if (limit) {
     if (limit <= 0 || isNaN(limit) === true) {
       return res.sendStatus(422);
     }
   }
+  if (!user) {
+    return res.sendStatus(422);
+  }
 
   try {
-    const messages = await db.collection("messages").find().toArray();
+    const messages = await db
+      .collection("messages")
+      .find({ $or: [{ from: user }, { to: { $in: ["Todos", user] } }] })
+      .toArray();
 
     if (limit) {
       const lastMessages = messages.reverse().slice(0, parseInt(limit));
@@ -141,12 +142,7 @@ server.post("/messages", async (req, res) => {
   if (!nameAlreadyListed) return res.sendStatus(422);
 
   try {
-    const currentTime =
-      dayjs().get("hour", "HH") +
-      ":" +
-      dayjs().get("minute", "mm") +
-      ":" +
-      dayjs().get("second", "ss");
+    const currentTime = dayjs(Date.now()).format("HH.mm.ss");
 
     await db.collection("messages").insertOne({
       to,
