@@ -71,15 +71,15 @@ server.post("/participants", async (req, res) => {
     const currentTime =
       dayjs().get("hour", "HH") +
       ":" +
-      dayjs().get("minute", "MM") +
+      dayjs().get("minute", "mm") +
       ":" +
-      dayjs().get("second", "SS");
+      dayjs().get("second", "ss");
 
     await db.collection("messages").insertOne({
-      from: user.name,
       to: "Todos",
       text: "entra na sala...",
       type: "status",
+      from: user.name,
       time: currentTime,
     });
 
@@ -92,7 +92,6 @@ server.post("/participants", async (req, res) => {
 
 server.get("/messages", async (req, res) => {
   const { limit } = req.query;
-  const user = req.headers.user;
 
   if (limit) {
     if (limit <= 0 || isNaN(limit) === true) {
@@ -113,8 +112,6 @@ server.get("/messages", async (req, res) => {
     res.status(500).send("Erro no servidor");
   }
 });
-
-//server.get("/message/:limit?", async (req, res) => {});
 
 server.post("/messages", async (req, res) => {
   const { to, text, type } = req.body;
@@ -147,15 +144,15 @@ server.post("/messages", async (req, res) => {
     const currentTime =
       dayjs().get("hour", "HH") +
       ":" +
-      dayjs().get("minute", "MM") +
+      dayjs().get("minute", "mm") +
       ":" +
-      dayjs().get("second", "SS");
+      dayjs().get("second", "ss");
 
     await db.collection("messages").insertOne({
-      from: user,
       to,
       text,
       type,
+      from: user,
       time: currentTime,
     });
 
