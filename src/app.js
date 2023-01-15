@@ -93,8 +93,10 @@ server.post("/participants", async (req, res) => {
 server.get("/messages", async (req, res) => {
   const { limit } = req.query;
 
-  if (limit <= 0 || isNaN(limit)) {
-    return res.sendStatus(422);
+  if (limit) {
+    if (limit <= 0 || isNaN(limit) === true) {
+      return res.sendStatus(422);
+    }
   }
 
   try {
