@@ -101,10 +101,7 @@ server.get("/messages", async (req, res) => {
   }
 
   try {
-    const messages = await db
-      .collection("messages")
-      .find({ $or: [{ from: user }, { to: { $in: ["Todos", user] } }] })
-      .toArray();
+    const messages = await db.collection("messages").find().toArray();
 
     if (limit) {
       const lastMessages = messages.reverse().slice(0, parseInt(limit));
