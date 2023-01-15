@@ -92,6 +92,7 @@ server.post("/participants", async (req, res) => {
 
 server.get("/messages", async (req, res) => {
   const { limit } = req.query;
+  const user = req.headers.user;
 
   if (limit) {
     if (limit <= 0 || isNaN(limit) === true) {
@@ -100,7 +101,10 @@ server.get("/messages", async (req, res) => {
   }
 
   try {
-    const messages = await db.collection("messages").find().toArray();
+    const messages = await db
+      .collection("messages")
+      .find({ $or: [{ from: user }, { to: { $in: ["Todos", user] } }] })
+      .toArray();
 
     if (limit) {
       const lastMessages = messages.reverse().slice(0, parseInt(limit));
