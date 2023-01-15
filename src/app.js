@@ -3,6 +3,7 @@ import cors from "cors";
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 import dayjs from "dayjs";
+import joi from 'joi'
 
 dotenv.config();
 
@@ -40,21 +41,33 @@ server.get("/participants", async (req, res) => {
 });
 
 server.post("/participants", async (req, res) => {
-  const { name } = req.body;
+  const user = req.body;
+
+  const userSchema = joi.object({
+    name: joi.string().required()
+  })
+
+  const validation = userSchema.validate(user, { abortEarly: false })
+
+  if (validation.error) {
+    const errors = validation.error.details.map((detail) => detail.message);
+    return res.status(422).send(errors);
+  }
 
   try {
     const nameAlreadyListed = await db
       .collection("participants")
-      .findOne({ name });
+      .findOne({ name: user.name });
 
     if (nameAlreadyListed) {
       return res.status(409).send("Nome ja cadastrado");
-    } else if (name === "") return res.status(422).send("nome invalido");
+    } //else if (name === "") return res.status(422).send("nome invalido");
 
     await db
       .collection("participants")
-      .insertOne({ name, lastStatus: Date.now() });
+      .insertOne({ name: user.name , lastStatus: Date.now() });
 
+    //nota* seria mais simpels ter usado dayjs(Date.now()).Format("HH.MM.SS")
     const currentTime =
       dayjs().get("hour", "HH") +
       ":" +
@@ -63,7 +76,7 @@ server.post("/participants", async (req, res) => {
       dayjs().get("second", "SS");
 
     await db.collection("messages").insertOne({
-      from: name,
+      from: user.name,
       to: "Todos",
       text: "entra na sala...",
       type: "status",
