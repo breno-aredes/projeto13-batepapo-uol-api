@@ -101,7 +101,7 @@ server.get("/messages", async (req, res) => {
       .toArray();
 
     if (limit) {
-      const lastMessages = messages.slice(parseInt(limit * -1));
+      const lastMessages = messages.slice(limit * -1).reverse();
       return res.send(lastMessages);
     }
 
