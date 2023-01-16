@@ -177,5 +177,26 @@ server.post("/Status", async (req, res) => {
   }
 });
 
+setInterval(async () => {
+  const millisecondsUser = await db.collection("participants").find().toArray();
+  const currentTime = dayjs(Date.now()).format("HH:mm:ss");
+  try {
+    millisecondsUser.filter(async (item) => {
+      if (item.lastStatus + 10000 <= Date.now()) {
+        await db.collection("messages").insertOne({
+          to: "Todos",
+          text: "sai da sala...",
+          type: "status",
+          from: item.name,
+          time: currentTime,
+        });
+        db.collection("participants").deleteOne(item);
+      }
+    });
+  } catch {
+    res.sendStatus(500);
+  }
+}, 15000);
+
 //roda server na porta 5000
 server.listen(PORT);
