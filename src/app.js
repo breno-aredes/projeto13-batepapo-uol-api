@@ -243,7 +243,7 @@ setInterval(async () => {
   } catch {
     res.sendStatus(500);
   }
-}, 150000000);
+}, 15000);
 
 //roda server na porta 5000
 server.listen(PORT);
