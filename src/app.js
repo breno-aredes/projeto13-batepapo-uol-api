@@ -178,7 +178,7 @@ server.delete("/messages/:id", async (req, res) => {
   }
 });
 
-server.post("/Status", async (req, res) => {
+server.post("/status", async (req, res) => {
   const user = req.headers.user;
 
   try {
