@@ -154,32 +154,8 @@ server.post("/messages", async (req, res) => {
 });
 
 server.delete("/messages/:id", async (req, res) => {
-  const { to, text, type } = req.body;
   const { user } = req.headers;
   const { id } = req.params;
-
-  const nameAlreadyListed = await db
-    .collection("participants")
-    .findOne({ name: user });
-
-  if (!nameAlreadyListed) return res.sendStatus(422);
-
-  const deleteSchema = joi.object({
-    to: joi.string().required(),
-    text: joi.string().required(),
-    type: joi.string().valid("message").valid("private_message").required(),
-    from: joi.string().valid().required(),
-  });
-
-  const validate = deleteSchema.validate(
-    { to, text, type, from: user },
-    { abortEarly: false }
-  );
-
-  if (validate.error) {
-    const err = validate.error.details.map((detail) => detail.message);
-    return res.status(422).send(err);
-  }
 
   try {
     const findMessage = await db
